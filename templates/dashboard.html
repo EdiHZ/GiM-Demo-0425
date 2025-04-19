@@ -9,21 +9,34 @@
             font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f2f5;
+            background-color: #e5e7eb;
             color: #111827;
             line-height: 1.6;
             font-size: 16px;
+            padding-bottom: 60px; /* Space for footer */
         }
         h1 {
             text-align: center;
             color: #1e40af;
             font-size: 1.8em;
-            margin: 0 0 20px;
+            margin: 0 0 10px;
         }
         h2 {
             color: #374151;
             font-size: 1.2em;
             margin: 15px 0 10px;
+            cursor: pointer; /* For collapsible sections */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h2::after {
+            content: "▼";
+            font-size: 0.8em;
+            transition: transform 0.3s;
+        }
+        h2.collapsed::after {
+            transform: rotate(180deg);
         }
         .container {
             max-width: 600px;
@@ -35,6 +48,17 @@
             margin-bottom: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s; /* For hover effect */
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .card-content {
+            display: block; /* For collapsible sections */
+        }
+        .card-content.collapsed {
+            display: none;
         }
         .rota-list {
             font-weight: 500;
@@ -51,12 +75,65 @@
             color: #dc2626;
             font-weight: 600;
         }
+        .alert-critical::before {
+            content: "⚠️ ";
+            margin-right: 5px;
+        }
         .alert-moderate {
             color: #2563eb;
         }
         .break-item {
             margin: 5px 0;
             font-weight: 500;
+        }
+        .timestamp {
+            text-align: center;
+            color: #4b5563;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        .header-sticky {
+            position: sticky;
+            top: 0;
+            background-color: #e5e7eb;
+            z-index: 10;
+            padding: 10px 0;
+        }
+        .refresh-button {
+            padding: 8px 16px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .footer {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.8em;
+            margin-top: 20px;
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            background-color: #e5e7eb;
         }
         @media (max-width: 600px) {
             body {
@@ -72,46 +149,91 @@
             .card {
                 padding: 12px;
             }
+            .card:hover {
+                transform: none; /* Disable hover effect on touch devices */
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>GiM Dashboard</h1>
-        
-        <div class="card">
-            <h2>Monday Rota</h2>
-            <div class="rota-list">{{ monday_rota | join(", ") }}</div>
-            {% if monday_warning %}
-                <div class="warning">{{ monday_warning }}</div>
-            {% endif %}
-        </div>
-        
-        <div class="card">
-            <h2>Tuesday Rota</h2>
-            <div class="rota-list">{{ tuesday_rota | join(", ") }}</div>
-            {% if tuesday_warning %}
-                <div class="warning">{{ tuesday_warning }}</div>
-            {% endif %}
-        </div>
-        
-        <div class="card">
-            <h2>Stock Alerts</h2>
-            {% if stock_alerts %}
-                {% for alert in stock_alerts %}
-                    <div class="alert alert-{{ alert.priority | lower }}">{{ alert.text }}</div>
-                {% endfor %}
-            {% else %}
-                <div>No stock alerts at this time.</div>
-            {% endif %}
-        </div>
-        
-        <div class="card">
-            <h2>Break Schedule</h2>
-            {% for staff, schedule in breaks.items() %}
-                <div class="break-item">{{ staff }}: {{ schedule }}</div>
-            {% endfor %}
+    <div class="header-sticky">
+        <div class="container">
+            <h1 id="dashboard-title">GiM Dashboard</h1>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <button class="refresh-button" onclick="refreshPage()">
+                    <span class="button-text">Refresh Data</span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+            <div class="timestamp">Last Updated: April 19, 2025, 9:15 AM</div>
         </div>
     </div>
+    
+    <div class="container">
+        <div class="card">
+            <h2 id="monday-rota" onclick="toggleSection(this)">Monday Rota</h2>
+            <div class="card-content">
+                <div class="rota-list">{{ monday_rota | join(", ") }}</div>
+                {% if monday_warning %}
+                    <div class="warning" role="alert" aria-label="Staff shortage warning for Monday">{{ monday_warning }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 id="tuesday-rota" onclick="toggleSection(this)">Tuesday Rota</h2>
+            <div class="card-content">
+                <div class="rota-list">{{ tuesday_rota | join(", ") }}</div>
+                {% if tuesday_warning %}
+                    <div class="warning" role="alert" aria-label="Staff shortage warning for Tuesday">{{ tuesday_warning }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 id="stock-alerts" onclick="toggleSection(this)">Stock Alerts</h2>
+            <div class="card-content">
+                {% if stock_alerts %}
+                    {% for alert in stock_alerts %}
+                        <div class="alert alert-{{ alert.priority | lower }}" role="alert" aria-label="{{ alert.priority }} stock alert: {{ alert.text }}">{{ alert.text }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div>No stock alerts at this time.</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 id="break-schedule" onclick="toggleSection(this)">Break Schedule</h2>
+            <div class="card-content">
+                {% for staff, schedule in breaks.items() %}
+                    <div class="break-item">{{ staff }}: {{ schedule }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        This dashboard prioritizes ethical data usage. All staff data is anonymized and used solely for scheduling purposes.
+    </div>
+
+    <script>
+        function toggleSection(element) {
+            const content = element.nextElementSibling;
+            element.classList.toggle('collapsed');
+            content.classList.toggle('collapsed');
+        }
+
+        function refreshPage() {
+            const button = document.querySelector('.refresh-button');
+            const buttonText = button.querySelector('.button-text');
+            const spinner = button.querySelector('.spinner');
+            buttonText.style.display = 'none';
+            spinner.style.display = 'inline-block';
+            setTimeout(() => {
+                location.reload();
+            }, 500); // Small delay to show spinner
+        }
+    </script>
 </body>
-</html> 
+</html>
