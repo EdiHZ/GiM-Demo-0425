@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiM Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #111827;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        h1 {
+            text-align: center;
+            color: #1e40af;
+            font-size: 1.8em;
+            margin: 0 0 20px;
+        }
+        h2 {
+            color: #374151;
+            font-size: 1.2em;
+            margin: 15px 0 10px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: #ffffff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        .rota-list {
+            font-weight: 500;
+        }
+        .warning {
+            color: #dc2626;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        .alert {
+            margin: 5px 0;
+        }
+        .alert-critical {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        .alert-moderate {
+            color: #2563eb;
+        }
+        .break-item {
+            margin: 5px 0;
+            font-weight: 500;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+                font-size: 14px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            h2 {
+                font-size: 1.1em;
+            }
+            .card {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GiM Dashboard</h1>
+        
+        <div class="card">
+            <h2>Monday Rota</h2>
+            <div class="rota-list">{{ monday_rota | join(", ") }}</div>
+            {% if monday_warning %}
+                <div class="warning">{{ monday_warning }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <h2>Tuesday Rota</h2>
+            <div class="rota-list">{{ tuesday_rota | join(", ") }}</div>
+            {% if tuesday_warning %}
+                <div class="warning">{{ tuesday_warning }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <h2>Stock Alerts</h2>
+            {% if stock_alerts %}
+                {% for alert in stock_alerts %}
+                    <div class="alert alert-{{ alert.priority | lower }}">{{ alert.text }}</div>
+                {% endfor %}
+            {% else %}
+                <div>No stock alerts at this time.</div>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <h2>Break Schedule</h2>
+            {% for staff, schedule in breaks.items() %}
+                <div class="break-item">{{ staff }}: {{ schedule }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html> 
