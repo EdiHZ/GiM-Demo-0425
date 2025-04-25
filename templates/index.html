@@ -123,14 +123,6 @@
             z-index: 10;
             padding: 10px 0;
         }
-        .logo {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        .logo img {
-            max-width: 100px;
-            height: auto;
-        }
         .refresh-button {
             padding: 8px 16px;
             background-color: var(--primary-blue);
@@ -198,10 +190,6 @@
 <body>
     <div class="header-sticky">
         <div class="container">
-            <div class="logo">
-                <!-- Placeholder for GiM logo -->
-                <img src="{{ url_for('static', filename='gim-logo.png') }}" alt="GiM Logo">
-            </div>
             <h1 id="dashboard-title">GiM Dashboard</h1>
             <div style="text-align: center; margin-bottom: 15px;">
                 <button class="refresh-button" onclick="refreshPage()" aria-label="Refresh dashboard data">
@@ -212,7 +200,7 @@
             <div class="timestamp" id="timestamp">Last Updated: <span id="last-updated"></span></div>
         </div>
     </div>
-
+    
     <div class="container">
         <div class="card">
             <h2 id="monday-rota" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="monday-content">Monday Rota</h2>
@@ -223,14 +211,14 @@
                 {% endif %}
             </div>
         </div>
-
+        
         <div class="card">
             <h2 id="tuesday-rota" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="tuesday-content">Tuesday Rota</h2>
             <div class="card-content" id="tuesday-content">
                 <div class="rota-list">{{ tuesday_rota | join(", ") }}</div>
             </div>
         </div>
-
+        
         <div class="card">
             <h2 id="stock-alerts" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="stock-content">Stock Alerts</h2>
             <div class="card-content" id="stock-content">
@@ -243,7 +231,7 @@
                 {% endif %}
             </div>
         </div>
-
+        
         <div class="card">
             <h2 id="break-schedule" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="break-content">Break Schedule</h2>
             <div class="card-content" id="break-content">
@@ -341,4 +329,4 @@
         }
     </script>
 </body>
-  </html>
+</html>
