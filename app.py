@@ -1,48 +1,23 @@
 from flask import Flask, render_template
-import os
-
 app = Flask(__name__)
-
-# Sample data for the demo
-staff_list = ["Alice", "Bob", "Charlie"]
-availability = {"Alice": ["Monday", "Tuesday"], "Bob": ["Monday", "Wednesday"], "Charlie": ["Tuesday"]}
-skill_levels = {"Alice": 2, "Bob": 1, "Charlie": 1}
-staff_needed = 5
-
-# Monday Rota
-monday_rota = [staff for staff in sorted(staff_list, key=lambda x: skill_levels[x], reverse=True) 
-               if "Monday" in availability[staff]][:staff_needed]
-monday_warning = f"Warning: Only {len(monday_rota)} staff assigned, need {staff_needed}" if len(monday_rota) < staff_needed else ""
-
-# Tuesday Rota
-tuesday_rota = [staff for staff in sorted(staff_list, key=lambda x: skill_levels[x], reverse=True) 
-                if "Tuesday" in availability[staff]][:staff_needed]
-tuesday_warning = f"Warning: Only {len(tuesday_rota)} staff assigned, need {staff_needed}" if len(tuesday_rota) < staff_needed else ""
-
-# Stock Alerts
-stock_list = {"Milk": 5, "Coffee": 20}
-thresholds = {"Milk": 10, "Coffee": 5}
-stock_alerts = []
-for item in stock_list:
-    if stock_list[item] < thresholds[item]:
-        restock_amount = thresholds[item] * 2
-        priority = "Critical" if stock_list[item] <= thresholds[item] * 0.5 else "Moderate"
-        stock_alerts.append({"text": f"{item} is low! Current: {stock_list[item]} - Restock to: {restock_amount}", 
-                            "priority": priority})
-
-# Break Schedule
-shift_lengths = {"Alice": 8, "Bob": 6, "Charlie": 4}
-break_preferences = {"Alice": 2, "Bob": 3, "Charlie": 2}
-breaks = {staff: f"15-min break after {break_preferences[staff]} hours" if shift_lengths[staff] >= 6 else "No break needed" 
-          for staff in shift_lengths}
 
 @app.route('/')
 def dashboard():
-    return render_template('dashboard.html', 
-                          monday_rota=monday_rota, monday_warning=monday_warning,
-                          tuesday_rota=tuesday_rota, tuesday_warning=tuesday_warning,
-                          stock_alerts=stock_alerts, breaks=breaks)
+    return render_template('index.html',
+        monday_rota=['Alice', 'Bob', 'Charlie'],
+        monday_warning='Short-staffed!',
+        tuesday_rota=['Dana', 'Emma'],
+        stock_alerts=[
+            {'text': 'Low coffee beans', 'priority': 'Critical'},
+            {'text': 'Order milk soon', 'priority': 'Moderate'}
+        ],
+        breaks={'Alice': '10:00-10:15', 'Bob': '11:00-11:15'},
+        sentiment='Positive (80%)',
+        cctv_metrics={'retention': '7 days', 'anonymized': 'Yes', 'compliance': 'GDPR'},
+        hygiene={'last_inspection': 'April 10, 2025', 'rating': '5/5'},
+        licensing={'alcohol': 'Dec 2025', 'entertainment': 'Nov 2025'},
+        iot={'fridge_temp': '4°C', 'bottles': '50'}
+    )
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True)
