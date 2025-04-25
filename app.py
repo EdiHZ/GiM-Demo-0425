@@ -1,14 +1,25 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
+# In-memory storage for rota data (resets on app restart)
+rota_data = {
+    'monday': ['Alice', 'Bob', 'Charlie'],
+    'tuesday': ['Dana', 'Emma']
+}
+
+def check_short_staffed(staff_list):
+    # Simple rule: if fewer than 3 staff, show a warning
+    return "Short-staffed!" if len(staff_list) < 3 else None
+
 @app.route('/')
 def dashboard():
+    monday_warning = check_short_staffed(rota_data['monday'])
     return render_template('index.html',
-        monday_rota=['Alice', 'Bob', 'Charlie'],
-        monday_warning='Short-staffed!',
-        tuesday_rota=['Dana', 'Emma'],
+        monday_rota=rota_data['monday'],
+        monday_warning=monday_warning,
+        tuesday_rota=rota_data['tuesday'],
         stock_alerts=[
             {'text': 'Low coffee beans', 'priority': 'Critical'},
             {'text': 'Order milk soon', 'priority': 'Moderate'}
@@ -21,6 +32,17 @@ def dashboard():
         iot={'fridge_temp': '4°C', 'bottles': '50'}
     )
 
+@app.route('/update-rota/<day>', methods=['POST'])
+def update_rota(day):
+    if day not in ['monday', 'tuesday']:
+        return "Invalid day", 400
+    # Get the new rota from the form
+    new_rota = request.form.get('rota', '')
+    # Split the input into a list, strip whitespace, and filter out empty entries
+    staff_list = [name.strip() for name in new_rota.split(',') if name.strip()]
+    rota_data[day] = staff_list
+    return redirect(url_for('dashboard'))
+
 if __name__ == '__main__':
-    port = int(os.getenv("PORT", 5000))  # Use PORT env var, default to 5000 for local dev
-    app.run(host='0.0.0.0', port=port, debug=False)  # Bind to 0.0.0.0 and specified port
+    port = int(os.getenv("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
