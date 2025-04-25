@@ -167,6 +167,25 @@
             background-color: var(--bg-light);
             padding: 5px 0;
         }
+        .rota-form {
+            margin-top: 10px;
+        }
+        .rota-input {
+            padding: 5px;
+            width: 70%;
+            margin-right: 5px;
+        }
+        .rota-submit {
+            padding: 5px 10px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .rota-submit:hover {
+            background-color: #1d4ed8;
+        }
         @media (max-width: 600px) {
             body {
                 padding: 15px;
@@ -184,6 +203,9 @@
             .card:hover {
                 transform: none;
             }
+            .rota-input {
+                width: 60%;
+            }
         }
     </style>
 </head>
@@ -200,7 +222,7 @@
             <div class="timestamp" id="timestamp">Last Updated: <span id="last-updated"></span></div>
         </div>
     </div>
-    
+
     <div class="container">
         <div class="card">
             <h2 id="monday-rota" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="monday-content">Monday Rota</h2>
@@ -209,16 +231,24 @@
                 {% if monday_warning %}
                     <div class="warning" role="alert" aria-label="Staff shortage warning for Monday">{{ monday_warning }}</div>
                 {% endif %}
+                <form class="rota-form" method="POST" action="/update-rota/monday">
+                    <input type="text" name="rota" class="rota-input" placeholder="Enter staff names (e.g., Alice, Bob)" aria-label="Edit Monday rota">
+                    <button type="submit" class="rota-submit">Update</button>
+                </form>
             </div>
         </div>
-        
+
         <div class="card">
             <h2 id="tuesday-rota" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="tuesday-content">Tuesday Rota</h2>
             <div class="card-content" id="tuesday-content">
                 <div class="rota-list">{{ tuesday_rota | join(", ") }}</div>
+                <form class="rota-form" method="POST" action="/update-rota/tuesday">
+                    <input type="text" name="rota" class="rota-input" placeholder="Enter staff names (e.g., Dana, Emma)" aria-label="Edit Tuesday rota">
+                    <button type="submit" class="rota-submit">Update</button>
+                </form>
             </div>
         </div>
-        
+
         <div class="card">
             <h2 id="stock-alerts" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="stock-content">Stock Alerts</h2>
             <div class="card-content" id="stock-content">
@@ -231,7 +261,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <div class="card">
             <h2 id="break-schedule" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="break-content">Break Schedule</h2>
             <div class="card-content" id="break-content">
