@@ -1,0 +1,2 @@
+mkdir static
+mv /path/to/gim-logo.png static/
