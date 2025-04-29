@@ -276,6 +276,15 @@
             <div class="card-content" id="crowd-content">
                 <div class="sentiment-positive">Current Customer Mood: {{ sentiment }}</div>
             </div>
+            <!-- In templates/index.html, add after line 278 (after </div> of CrowdEcho) -->
+<div class="card">
+    <h2 id="staff-suggestion" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="suggestion-content">Staff Suggestion</h2>
+    <div class="card-content" id="suggestion-content">
+        {% for day, staff in staff_suggestion.items() %}
+            <div class="rota-list">{{ day }}: {{ staff | join(", ") }}</div>
+        {% endfor %}
+    </div>
+</div>
         </div>
 
         <div class="card">
