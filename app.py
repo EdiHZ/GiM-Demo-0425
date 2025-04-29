@@ -46,3 +46,34 @@ def update_rota(day):
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
+# In app.py, add after existing imports and routes (around line 50)
+from datetime import datetime
+
+# Mock data for staff availability, sales, and events
+staff_availability = {"Alice": ["Monday", "Tuesday"], "Bob": ["Monday"], "Charlie": ["Tuesday"]}
+sales_data = {"Monday": "high", "Tuesday": "low"}  # Mock sales: high = need more staff
+local_events = {"Monday": "Festival", "Tuesday": "None"}  # Mock events
+
+@app.route('/suggest-staff/<day>')
+def suggest_staff(day):
+    # Get available staff for the day
+    available_staff = [name for name, days in staff_availability.items() if day in days]
+    
+    # Suggest more staff if sales are high or there's an event
+    suggestion = available_staff[:2] if sales_data.get(day) == "high" or local_events.get(day) != "None" else available_staff[:1]
+    
+    if not suggestion:
+        suggestion = ["No staff available"]
+    
+    return render_template('index.html', 
+                         monday_rota=monday_rota,  # Existing data
+                         tuesday_rota=tuesday_rota,
+                         stock_alerts=stock_alerts,
+                         breaks=breaks,
+                         sentiment="Positive",  # Mock for CrowdEcho
+                         cctv_metrics={"retention": "30 days", "anonymized": "Yes", "compliance": "GDPR"},
+                         hygiene={"last_inspection": "2025-04-01", "rating": "5"},
+                         licensing={"alcohol": "2025-12-31", "entertainment": "2025-12-31"},
+                         iot={"fridge_temp": "4°C", "bottles": "50"},
+                         staff_suggestion={day: suggestion})  # New data
