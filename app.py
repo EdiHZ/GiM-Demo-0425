@@ -1,7 +1,9 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, Response
 from datetime import datetime
-import cv2  # OpenCV for video streaming (using opencv-python-headless)
+import cv2
+import time
+import shutil  # Add for calculating directory size
 
 app = Flask(__name__)
 
@@ -89,19 +91,16 @@ def suggest_staff(day):
 
 # Dahua CCTV streaming route
 def generate_frames():
-    # Replace with actual Dahua camera credentials and IP
     DAHUA_USERNAME = "admin"
     DAHUA_PASSWORD = "admin"
-    DAHUA_IP = "192.168.1.108"  # Example IP, replace with actual
+    DAHUA_IP = "192.168.1.108"
     rtsp_url = f"rtsp://{DAHUA_USERNAME}:{DAHUA_PASSWORD}@{DAHUA_IP}/cam/realmonitor?channel=1&subtype=0"
 
-    # Open the RTSP stream
     cap = cv2.VideoCapture(rtsp_url)
     if not cap.isOpened():
         print("Error: Could not open RTSP stream")
         return
 
-    # Overcrowding threshold
     OVERCROWDING_THRESHOLD = 10
     overcrowding_status = "Safe"
 
@@ -110,27 +109,36 @@ def generate_frames():
         if not success:
             break
 
-        # Convert frame to grayscale for person detection
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # Detect people in the frame
         people = person_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(30, 60))
         people_count = len(people)
 
-        # Update global people count
         global global_people_count
         global_people_count = people_count
 
-        # Update overcrowding status
+        # Check storage limit (1 GB = 1,073,741,824 bytes)
+        STORAGE_LIMIT = 1073741824  # 1 GB in bytes
+        save_dir = "cctv_recordings"
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        dir_size = sum(os.path.getsize(os.path.join(save_dir, f)) for f in os.listdir(save_dir) if os.path.isfile(os.path.join(save_dir, f)))
+        if dir_size < STORAGE_LIMIT:
+            # Save frame every 5 minutes (300 seconds)
+            current_time = time.time()
+            if not hasattr(generate_frames, 'last_save_time'):
+                generate_frames.last_save_time = current_time
+            if current_time - generate_frames.last_save_time >= 300:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                cv2.imwrite(f"{save_dir}/frame_{timestamp}.jpg", frame)
+                generate_frames.last_save_time = current_time
+
         overcrowding_status = "Overcrowded" if people_count > OVERCROWDING_THRESHOLD else "Safe"
 
-        # Draw rectangles around detected people (optional, for debugging)
         for (x, y, w, h) in people:
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
-        # Encode the frame as JPEG
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
-        # Yield the frame
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
@@ -146,6 +154,18 @@ def crowdecho_status():
     OVERCROWDING_THRESHOLD = 10
     status = "Overcrowded" if global_people_count > OVERCROWDING_THRESHOLD else "Safe"
     return {"people_count": global_people_count, "status": status}
+
+@app.route('/cleanup_cctv')
+def cleanup_cctv():
+    save_dir = "cctv_recordings"
+    if os.path.exists(save_dir):
+        for filename in os.listdir(save_dir):
+            file_path = os.path.join(save_dir, filename)
+            if os.path.isfile(file_path):
+                file_time = datetime.strptime(filename.split('_')[1].split('.')[0], "%Y%m%d_%H%M%S")
+                if (datetime.now() - file_time).days > 7:
+                    os.remove(file_path)
+    return "Cleanup complete"
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
