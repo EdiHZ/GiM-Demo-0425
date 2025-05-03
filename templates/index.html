@@ -278,12 +278,17 @@
             </div>
             <!-- In templates/index.html, add after line 278 (after </div> of CrowdEcho) -->
 <div class="card">
-    <h2 id="staff-suggestion" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="suggestion-content">Staff Suggestion</h2>
-    <div class="card-content" id="suggestion-content">
-        {% for day, staff in staff_suggestion.items() %}
-            <div class="rota-list">{{ day }}: {{ staff | join(", ") }}</div>
-        {% endfor %}
-    </div>
+  <h2 id="staff-suggestion" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" ariacontrols="suggestion-content">Staff Suggestion</h2>
+  <div class="card-content" id="suggestion-content">
+    {% if staff_suggestion %}
+      {% for day, staff in staff_suggestion.items() %}
+        <div class="rota-list">{{ day }}: {{ staff | join(", ") }}</div>
+      {% endfor %}
+    {% else %}
+      <div>No staff suggestions available.</div>
+    {% endif %}
+  </div>
+</div>
 </div>
         </div>
 
