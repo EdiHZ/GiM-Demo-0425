@@ -1,385 +1,430 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="GiM Dashboard for venue management with ethical data practices">
-    <title>GiM Dashboard</title>
+    <meta name="description" content="GIM Dashboard for venue management with ethical data practices">
+    <title>GIM Dashboard</title>
     <style>
+      :root {
+        --primary-blue: #2563eb;
+        --critical-red: #dc2626;
+        --text-dark: #111827;
+        --text-gray: #4b5563;
+        --footer-gray: #6b7280;
+        --bg-light: #e5e7eb;
+        --card-bg: #ffffff;
+      }
+
+      @media (prefers-contrast: high) {
         :root {
-            --primary-blue: #2563eb;
-            --critical-red: #dc2626;
-            --text-dark: #111827;
-            --text-gray: #4b5563;
-            --footer-gray: #6b7280;
-            --bg-light: #e5e7eb;
-            --card-bg: #ffffff;
+          --primary-blue: #003087;
+          --critical-red: #b91c1c;
+          --text-dark: #000000;
+          --bg-light: #ffffff;
+          --card-bg: #f0f0f0;
         }
-        @media (prefers-contrast: high) {
-            :root {
-                --primary-blue: #003087;
-                --critical-red: #b91c1c;
-                --text-dark: #000000;
-                --bg-light: #ffffff;
-                --card-bg: #f0f0f0;
-            }
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+        line-height: 1.6;
+        font-size: 16px;
+        padding-bottom: 100px;
+      }
+
+      h1 {
+        text-align: center;
+        color: var(--primary-blue);
+        font-size: 1.8em;
+        margin: 0 0 10px;
+      }
+
+      h2 {
+        color: #374151;
+        font-size: 1.2em;
+        margin: 15px 0 10px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        outline: none;
+      }
+
+      h2:focus-visible {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+      }
+
+      h2::after {
+        content: "▼";
+        font-size: 0.8em;
+        transition: transform 0.3s;
+      }
+
+      h2.collapsed::after {
+        transform: rotate(180deg);
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .card {
+        background-color: var(--card-bg);
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-content {
+        display: block;
+      }
+
+      .card-content.collapsed {
+        display: none;
+      }
+
+      .rota-list, .break-item, .iot-item {
+        font-weight: 500;
+        margin: 5px 0;
+      }
+
+      .warning {
+        color: var(--critical-red);
+        font-weight: 600;
+        margin-top: 5px;
+      }
+
+      .alert {
+        margin: 5px 0;
+      }
+
+      .alert-critical {
+        color: var(--critical-red);
+        font-weight: 600;
+      }
+
+      .alert-critical::before {
+        content: "!";
+        margin-right: 5px;
+      }
+
+      .alert-moderate {
+        color: var(--primary-blue);
+      }
+
+      .sentiment-positive {
+        color: #16a34a;
+        font-weight: 500;
+      }
+
+      .echo {
+        text-align: center;
+        color: var(--text-gray);
+        font-size: 0.9em;
+        margin-bottom: 15px;
+      }
+
+      .header-sticky {
+        position: sticky;
+        top: 0;
+        background-color: var(--bg-light);
+        z-index: 10;
+        padding: 10px 0;
+      }
+
+      .refresh-button {
+        padding: 8px 16px;
+        background-color: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s;
+      }
+
+      .refresh-button:hover {
+        background-color: #1d4ed8;
+      }
+
+      .refresh-button:focus-visible {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+      }
+
+      .spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ffffff;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
         }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+
+      footer {
+        text-align: center;
+        color: var(--footer-gray);
+        font-size: 0.8em;
+        margin-top: 20px;
+        position: fixed;
+        bottom: 10px;
+        width: 100%;
+        background-color: var(--bg-light);
+        padding: 5px 0;
+      }
+
+      .rota-form {
+        margin-top: 10px;
+      }
+
+      .rota-input {
+        padding: 5px;
+        width: 70%;
+        margin-right: 5px;
+      }
+
+      .rota-submit {
+        padding: 5px 10px;
+        background-color: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .rota-submit:hover {
+        background-color: #1d4ed8;
+      }
+
+      @media (max-width: 600px) {
         body {
-            font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            line-height: 1.6;
-            font-size: 16px;
-            padding-bottom: 100px;
+          padding: 15px;
+          font-size: 14px;
         }
+
         h1 {
-            text-align: center;
-            color: var(--primary-blue);
-            font-size: 1.8em;
-            margin: 0 0 10px;
+          font-size: 1.5em;
         }
+
         h2 {
-            color: #374151;
-            font-size: 1.2em;
-            margin: 15px 0 10px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            outline: none;
+          font-size: 1.1em;
         }
-        h2:focus-visible {
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
-        }
-        h2::after {
-            content: "▼";
-            font-size: 0.8em;
-            transition: transform 0.3s;
-        }
-        h2.collapsed::after {
-            transform: rotate(180deg);
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+
         .card {
-            background-color: var(--card-bg);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
+          padding: 12px;
         }
+
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          transform: none;
         }
-        .card-content {
-            display: block;
-        }
-        .card-content.collapsed {
-            display: none;
-        }
-        .rota-list, .break-item, .iot-item {
-            font-weight: 500;
-            margin: 5px 0;
-        }
-        .warning {
-            color: var(--critical-red);
-            font-weight: 600;
-            margin-top: 5px;
-        }
-        .alert {
-            margin: 5px 0;
-        }
-        .alert-critical {
-            color: var(--critical-red);
-            font-weight: 600;
-        }
-        .alert-critical::before {
-            content: "⚠️ ";
-            margin-right: 5px;
-        }
-        .alert-moderate {
-            color: var(--primary-blue);
-        }
-        .sentiment-positive {
-            color: #16a34a;
-            font-weight: 500;
-        }
-        .timestamp {
-            text-align: center;
-            color: var(--text-gray);
-            font-size: 0.9em;
-            margin-bottom: 15px;
-        }
-        .header-sticky {
-            position: sticky;
-            top: 0;
-            background-color: var(--bg-light);
-            z-index: 10;
-            padding: 10px 0;
-        }
-        .refresh-button {
-            padding: 8px 16px;
-            background-color: var(--primary-blue);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            position: relative;
-            transition: background-color 0.2s;
-        }
-        .refresh-button:hover {
-            background-color: #1d4ed8;
-        }
-        .refresh-button:focus-visible {
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
-        }
-        .spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #ffffff;
-            border-top: 2px solid transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        .footer {
-            text-align: center;
-            color: var(--footer-gray);
-            font-size: 0.8em;
-            margin-top: 20px;
-            position: fixed;
-            bottom: 10px;
-            width: 100%;
-            background-color: var(--bg-light);
-            padding: 5px 0;
-        }
-        .rota-form {
-            margin-top: 10px;
-        }
+
         .rota-input {
-            padding: 5px;
-            width: 70%;
-            margin-right: 5px;
+          width: 60%;
         }
-        .rota-submit {
-            padding: 5px 10px;
-            background-color: var(--primary-blue);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .rota-submit:hover {
-            background-color: #1d4ed8;
-        }
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
-                font-size: 14px;
-            }
-            h1 {
-                font-size: 1.5em;
-            }
-            h2 {
-                font-size: 1.1em;
-            }
-            .card {
-                padding: 12px;
-            }
-            .card:hover {
-                transform: none;
-            }
-            .rota-input {
-                width: 60%;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="header-sticky">
-        <div class="container">
-            <h1 id="dashboard-title">GiM Dashboard</h1>
-            <div style="text-align: center; margin-bottom: 15px;">
-                <button class="refresh-button" onclick="refreshPage()" aria-label="Refresh dashboard data">
-                    <span class="button-text">Refresh Data</span>
-                    <span class="spinner"></span>
-                </button>
-            </div>
-            <div class="timestamp" id="timestamp">Last Updated: <span id="last-updated"></span></div>
+      <div class="container">
+        <h1 id="dashboard-title">GiM Dashboard</h1>
+        <div style="text-align: center; margin-bottom: 15px;">
+          <button class="refresh-button" onclick="refreshPage()" aria-label="Refresh dashboard data">
+            <span class="button-text">Refresh Data</span>
+            <span class="spinner"></span>
+          </button>
         </div>
+        <div class="timestamp" id="timestamp">Last Updated: <span id="last-updated"></span></div>
+      </div>
     </div>
-
     <div class="container">
-        <div class="card">
-            <h2 id="monday-rota" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="monday-content">Monday Rota</h2>
-            <div class="card-content" id="monday-content">
-                <div class="rota-list">{{ monday_rota | join(", ") }}</div>
-                {% if monday_warning %}
-                    <div class="warning" role="alert" aria-label="Staff shortage warning for Monday">{{ monday_warning }}</div>
-                {% endif %}
-                <form class="rota-form" method="POST" action="/update-rota/monday">
-                    <input type="text" name="rota" class="rota-input" placeholder="Enter staff names (e.g., Alice, Bob)" aria-label="Edit Monday rota">
-                    <button type="submit" class="rota-submit">Update</button>
-                </form>
-            </div>
+      <div class="card">
+        <h2 id="monday-rota" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="monday-content">Monday Rota</h2>
+        <div class="card-content" id="monday-content">
+          <div class="rota-list">{{ monday_rota | join(", ") }}</div>
+          {% if monday_warning %}
+          <div class="warning" role="alert" aria-label="Staff shortage warning for Monday">{{ monday_warning }}</div>
+          {% endif %}
+          <form class="rota-form" method="POST" action="/update-rota/monday">
+            <input type="text" name="rota" class="rota-input" placeholder="Enter staff names (e.g., Alice, Bob)" aria-label="Edit Monday rota">
+            <button type="submit" class="rota-submit">Update</button>
+          </form>
         </div>
-
-        <div class="card">
-            <h2 id="tuesday-rota" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="tuesday-content">Tuesday Rota</h2>
-            <div class="card-content" id="tuesday-content">
-                <div class="rota-list">{{ tuesday_rota | join(", ") }}</div>
-                <form class="rota-form" method="POST" action="/update-rota/tuesday">
-                    <input type="text" name="rota" class="rota-input" placeholder="Enter staff names (e.g., Dana, Emma)" aria-label="Edit Tuesday rota">
-                    <button type="submit" class="rota-submit">Update</button>
-                </form>
-            </div>
+      </div>
+      <div class="card">
+        <h2 id="tuesday-rota" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="tuesday-content">Tuesday Rota</h2>
+        <div class="card-content" id="tuesday-content">
+          <div class="rota-list">{{ tuesday_rota | join(", ") }}</div>
+          <form class="rota-form" method="POST" action="/update-rota/tuesday">
+            <input type="text" name="rota" class="rota-input" placeholder="Enter staff names (e.g., Dana, Emma)" aria-label="Edit Tuesday rota">
+            <button type="submit" class="rota-submit">Update</button>
+          </form>
         </div>
-
-        <div class="card">
-            <h2 id="stock-alerts" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="stock-content">Stock Alerts</h2>
-            <div class="card-content" id="stock-content">
-                {% if stock_alerts %}
-                    {% for alert in stock_alerts %}
-                        <div class="alert alert-{{ alert.priority | lower }}" role="alert" aria-label="{{ alert.priority }} stock alert: {{ alert.text }}">{{ alert.text }}</div>
-                    {% endfor %}
-                {% else %}
-                    <div>No stock alerts at this time.</div>
-                {% endif %}
-            </div>
+      </div>
+      <div class="card">
+        <h2 id="stock-alerts" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="stock-content">Stock Alerts</h2>
+        <div class="card-content" id="stock-content">
+          {% if stock_alerts %}
+          {% for alert in stock_alerts %}
+          <div class="alert alert-{{ alert.priority | lower }}" role="alert" aria-label="{{ alert.priority }} stock alert: {{ alert.text }}">{{ alert.text }}</div>
+          {% endfor %}
+          {% else %}
+          <div>No stock alerts at this time.</div>
+          {% endif %}
         </div>
-
-        <div class="card">
-            <h2 id="break-schedule" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="break-content">Break Schedule</h2>
-            <div class="card-content" id="break-content">
-                {% for staff, schedule in breaks.items() %}
-                    <div class="break-item">{{ staff }}: {{ schedule }}</div>
-                {% endfor %}
-            </div>
+      </div>
+      <div class="card">
+        <h2 id="breaks-schedule" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="breaks-content">Breaks Schedule</h2>
+        <div class="card-content" id="breaks-content">
+          {% for staff, schedule in breaks.items() %}
+          <div class="break-item">{{ staff }}: {{ schedule }}</div>
+          {% endfor %}
         </div>
-
-    <div class="card">
-    <h2 id="crowd-echo" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" ariacontrols="crowd-content">CrowdEcho Sentiment</h2>
-    <div class="card-content" id="crowd-content">
-        <div class="sentiment-positive">Current Customer Mood: {{ sentiment }}</div>
-        <div style="margin-top: 10px;">
+      </div>
+      <div class="card">
+        <h2 id="crowd-echo" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="crowd-content">CrowdEcho Sentiment</h2>
+        <div class="card-content" id="crowd-content">
+          <div class="sentiment-positive">Current Customer Mood: {{ sentiment }}</div>
+          <div style="margin-top: 10px;">
             <h3>Live Feed (The Fiddler's Arms)</h3>
             <img src="{{ url_for('crowdecho') }}" alt="Live CCTV Feed" style="width: 100%; max-width: 500px; height: auto;" />
-        </div>
-        <div style="margin-top: 10px;">
+          </div>
+          <div style="margin-top: 10px;">
             <h3>Safety Metrics</h3>
-            <div id="safety-metrics">Overcrowding: Not yet implemented</div>
+            <div id="safety-metrics">People Count: <span id="people-count">0</span> | Status: <span id="crowd-status">Safe</span></div>
+          </div>
         </div>
-    </div>
-    </div>    
-            <!-- In templates/index.html, add after line 278 (after </div> of CrowdEcho) -->
-<div class="card">
-  <h2 id="staff-suggestion" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" ariacontrols="suggestion-content">Staff Suggestion</h2>
-  <div class="card-content" id="suggestion-content">
-    {% if staff_suggestion %}
-      {% for day, staff in staff_suggestion.items() %}
-        <div class="rota-list">{{ day }}: {{ staff | join(", ") }}</div>
-      {% endfor %}
-    {% else %}
-      <div>No staff suggestions available.</div>
-    {% endif %}
-  </div>
-</div>
-</div>
+      </div>
+      <div class="card">
+        <h2 id="staff-suggestion" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="suggestion-content">Staff Suggestion</h2>
+        <div class="card-content" id="suggestion-content">
+          {% if staff_suggestion %}
+          {% for day, staff in staff_suggestion.items() %}
+          <div class="rota-list">{{ day }}: {{ staff | join(", ") }}</div>
+          {% endfor %}
+          {% else %}
+          <div>No staff suggestions available.</div>
+          {% endif %}
         </div>
-
-        <div class="card">
-            <h2 id="cctv-metrics" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="cctv-content">CCTV Metrics</h2>
-            <div class="card-content" id="cctv-content">
-                <div>Data Retention: {{ cctv_metrics.retention }}</div>
-                <div>Anonymized: {{ cctv_metrics.anonymized }}</div>
-                <div>Compliance: {{ cctv_metrics.compliance }}</div>
-            </div>
+      </div>
+      <div class="card">
+        <h2 id="cctv-metrics" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="cctv-content">CCTV Metrics</h2>
+        <div class="card-content" id="cctv-content">
+          <div>Data Retention: {{ cctv_metrics.retention }}</div>
+          <div>Anonymized: {{ cctv_metrics.anonymized }}</div>
+          <div>Compliance: {{ cctv_metrics.compliance }}</div>
         </div>
-
-        <div class="card">
-            <h2 id="food-hygiene" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="hygiene-content">Food Hygiene</h2>
-            <div class="card-content" id="hygiene-content">
-                <div>Last Inspection: {{ hygiene.last_inspection }}</div>
-                <div>Rating: {{ hygiene.rating }}</div>
-            </div>
+      </div>
+      <div class="card">
+        <h2 id="food-hygiene" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="hygiene-content">Food Hygiene</h2>
+        <div class="card-content" id="hygiene-content">
+          <div>Last Inspection: {{ hygiene.last_inspection }}</div>
+          <div>Rating: {{ hygiene.rating }}</div>
         </div>
-
-        <div class="card">
-            <h2 id="licensing" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="licensing-content">Licensing Status</h2>
-            <div class="card-content" id="licensing-content">
-                <div>Alcohol License: Valid until {{ licensing.alcohol }}</div>
-                <div>Entertainment License: Valid until {{ licensing.entertainment }}</div>
-            </div>
+      </div>
+      <div class="card">
+        <h2 id="licensing" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="licensing-content">Licensing</h2>
+        <div class="card-content" id="licensing-content">
+          <div>Alcohol License: Valid until {{ licensing.alcohol }}</div>
+          <div>Entertainment License: Valid until {{ licensing.entertainment }}</div>
         </div>
-
-        <div class="card">
-            <h2 id="iot-data" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="iot-content">IoT Data</h2>
-            <div class="card-content" id="iot-content">
-                <div class="iot-item">Fridge Temp: {{ iot.fridge_temp }}</div>
-                <div class="iot-item">Bottle Monitor: {{ iot.bottles }} remaining</div>
-            </div>
+      </div>
+      <div class="card">
+        <h2 id="iot-data" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="iot-content">IoT Data</h2>
+        <div class="card-content" id="iot-content">
+          <div class="iot-item">Fridge Temp: {{ iot.fridge_temp }}</div>
+          <div class="iot-item">Bottle Monitor: {{ iot.bottles }} remaining</div>
         </div>
-
-        <div class="card">
-            <h2 id="free-tier" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="free-tier-content">Free Tier Features</h2>
-            <div class="card-content" id="free-tier-content">
-                <div>Access to Rota Planner and Stock Alerts</div>
-                <div>Upgrade for CrowdEcho, CCTV Metrics, and GiM Assistant</div>
-            </div>
+      </div>
+      <div class="card">
+        <h2 id="free-tier" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" aria-controls="free-tier-content">Free Tier Features</h2>
+        <div class="card-content" id="free-tier-content">
+          <div>Access to Rota Planner and Stock Alerts</div>
+          <div>Upgrade for CrowdEcho, CCTV Metrics, and GiM Assistant</div>
         </div>
-    </div>
-
-    <div class="footer" role="contentinfo">
+      </div>
+      <div class="footer" role="contentinfo">
         GiM prioritizes ethical data usage. All staff and customer data is anonymized and used solely for operational purposes, adhering to GDPR and ethical AI standards.
+      </div>
     </div>
-
     <script>
-        function updateTimestamp() {
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
-            document.getElementById('last-updated').textContent = now.toLocaleString('en-US', options);
-        }
-        updateTimestamp();
+      function updateTimestamp() {
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+        document.getElementById('last-updated').textContent = now.toLocaleString('en-US', options);
+      }
+      updateTimestamp();
 
-        function toggleSection(element) {
-            const content = element.nextElementSibling;
-            const isExpanded = element.classList.toggle('collapsed');
-            content.classList.toggle('collapsed');
-            element.setAttribute('aria-expanded', !isExpanded);
-        }
+      function toggleSection(element) {
+        const content = element.nextElementSibling;
+        const isExpanded = element.classList.toggle('collapsed');
+        content.classList.toggle('collapsed');
+        element.setAttribute('aria-expanded', !isExpanded);
+      }
 
-        function handleKeydown(event, element) {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                toggleSection(element);
-            }
+      function handleKeyDown(event, element) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggleSection(element);
         }
+      }
 
-        function refreshPage() {
-            const button = document.querySelector('.refresh-button');
-            const buttonText = button.querySelector('.button-text');
-            const spinner = button.querySelector('.spinner');
-            buttonText.style.display = 'none';
-            spinner.style.display = 'inline-block';
-            button.disabled = true;
-            setTimeout(() => {
-                location.reload();
-            }, 500);
-        }
+      function refreshPage() {
+        const button = document.querySelector('.refresh-button');
+        const buttonText = button.querySelector('.button-text');
+        const spinner = button.querySelector('.spinner');
+        buttonText.style.display = 'none';
+        spinner.style.display = 'inline-block';
+        button.disabled = true;
+        setTimeout(() => {
+          location.reload();
+        }, 500);
+      }
+
+      // Fetch and update overcrowding status every 5 seconds
+      function updateCrowdStatus() {
+        fetch('/crowdecho_status')
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('people-count').textContent = data.people_count;
+            document.getElementById('crowd-status').textContent = data.status;
+            // Color the status based on value
+            const statusElement = document.getElementById('crowd-status');
+            statusElement.style.color = data.status === "Overcrowded" ? "red" : "green";
+          })
+          .catch(error => console.error('Error fetching crowd status:', error));
+      }
+
+      // Update every 5 seconds
+      setInterval(updateCrowdStatus, 5000);
+      // Initial update
+      updateCrowdStatus();
     </script>
-</body>
+  </body>
 </html>
