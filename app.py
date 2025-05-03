@@ -1,9 +1,16 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, Response
 from datetime import datetime
-import cv2  # Add OpenCV for video streaming
+import cv2  # OpenCV for video streaming (using opencv-python-headless)
 
 app = Flask(__name__)
+
+# Path to Haar Cascade for person detection (included with OpenCV)
+cascade_path = cv2.data.haarcascades + "haarcascade_fullbody.xml"
+person_cascade = cv2.CascadeClassifier(cascade_path)
+
+# Global variable to store people count (temporary solution)
+global_people_count = 0
 
 # In-memory storage for rota data (resets on app restart)
 rota_data = {
@@ -94,14 +101,36 @@ def generate_frames():
         print("Error: Could not open RTSP stream")
         return
 
+    # Overcrowding threshold
+    OVERCROWDING_THRESHOLD = 10
+    overcrowding_status = "Safe"
+
     while True:
         success, frame = cap.read()
         if not success:
             break
+
+        # Convert frame to grayscale for person detection
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # Detect people in the frame
+        people = person_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(30, 60))
+        people_count = len(people)
+
+        # Update global people count
+        global global_people_count
+        global_people_count = people_count
+
+        # Update overcrowding status
+        overcrowding_status = "Overcrowded" if people_count > OVERCROWDING_THRESHOLD else "Safe"
+
+        # Draw rectangles around detected people (optional, for debugging)
+        for (x, y, w, h) in people:
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
         # Encode the frame as JPEG
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
-        # Yield the frame in a format suitable for streaming
+        # Yield the frame
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
@@ -110,6 +139,13 @@ def generate_frames():
 @app.route('/crowdecho')
 def crowdecho():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/crowdecho_status')
+def crowdecho_status():
+    global global_people_count
+    OVERCROWDING_THRESHOLD = 10
+    status = "Overcrowded" if global_people_count > OVERCROWDING_THRESHOLD else "Safe"
+    return {"people_count": global_people_count, "status": status}
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
