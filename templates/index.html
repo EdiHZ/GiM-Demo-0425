@@ -271,11 +271,20 @@
             </div>
         </div>
 
-        <div class="card">
-            <h2 id="crowd-echo" onclick="toggleSection(this)" onkeydown="handleKeydown(event, this)" tabindex="0" aria-expanded="true" aria-controls="crowd-content">CrowdEcho Sentiment</h2>
-            <div class="card-content" id="crowd-content">
-                <div class="sentiment-positive">Current Customer Mood: {{ sentiment }}</div>
-            </div>
+    <div class="card">
+    <h2 id="crowd-echo" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" ariacontrols="crowd-content">CrowdEcho Sentiment</h2>
+    <div class="card-content" id="crowd-content">
+        <div class="sentiment-positive">Current Customer Mood: {{ sentiment }}</div>
+        <div style="margin-top: 10px;">
+            <h3>Live Feed (The Fiddler's Arms)</h3>
+            <img src="{{ url_for('crowdecho') }}" alt="Live CCTV Feed" style="width: 100%; max-width: 500px; height: auto;" />
+        </div>
+        <div style="margin-top: 10px;">
+            <h3>Safety Metrics</h3>
+            <div id="safety-metrics">Overcrowding: Not yet implemented</div>
+        </div>
+    </div>
+    </div>    
             <!-- In templates/index.html, add after line 278 (after </div> of CrowdEcho) -->
 <div class="card">
   <h2 id="staff-suggestion" onclick="toggleSection(this)" onkeydown="handleKeyDown(event, this)" tabindex="0" aria-expanded="true" ariacontrols="suggestion-content">Staff Suggestion</h2>
